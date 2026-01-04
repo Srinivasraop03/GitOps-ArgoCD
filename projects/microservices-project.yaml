@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: microservices
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Project for Microservices
+
+  # Allow any source repo (Restrict this in production to your specific org)
+  sourceRepos:
+    - "*"
+
+  # Allow deployments to the local cluster in any namespace
+  destinations:
+    - namespace: "*"
+      server: https://kubernetes.default.svc
+
+  # Allow only specific cluster-scoped resources if needed, otherwise blacklist
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+
+  # Enable automated sync (optional to force it here or at App level)
+  syncWindows:
+    - kind: allow
+      schedule: "* * * * *"
+      duration: 1h
+      applications:
+        - "*"

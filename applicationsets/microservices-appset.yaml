@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: microservices-set
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - list:
+        elements:
+          # REPLACE 'YOUR_GITHUB_USER' with your actual specific username or org
+          - name: gitops-service-a
+            url: https://github.com/Srinivasraop03/GitOps-Service-A.git
+            path: ./deploy
+          - name: gitops-service-b
+            url: https://github.com/Srinivasraop03/GitOps-Service-B.git
+            path: ./deploy
+          - name: gitops-service-c
+            url: https://github.com/Srinivasraop03/GitOps-Service-C.git
+            path: ./deploy
+
+  template:
+    metadata:
+      name: "{{.name}}"
+    spec:
+      project: microservices
+      source:
+        repoURL: "{{.url}}"
+        targetRevision: HEAD
+        path: "{{.path}}"
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{.name}}" # Will now be gitops-service-a, etc.
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
